@@ -1,0 +1,13 @@
+#!/bin/bash
+#set -e
+
+dev=$1; shift
+drv=$1; shift
+while [ -n "$drv" ]; do
+                echo $dev > /sys/bus/pci/devices/$dev/driver/unbind
+                echo $dev > /sys/bus/pci/drivers/$drv/bind
+        echo "$dev -> $drv"
+
+        dev=$1; shift
+        drv=$1; shift
+done  

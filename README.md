@@ -8,9 +8,17 @@ Tested on:
 - WM: Mutter 
 - OS: Pop!_OS 21.10 x86_64 
 - RTX 3060 ti  Driver Version: 470.86  CUDA Version: 11.4 
+- Host: XPS8940
 
-
-**Note**: if your vm not launching, try to calibrate `sleep` in `vfio-startup.sh`
+**Note**:
+- Sometimes win10 doesn't launch
+- Modify `qemu` for your own usage. I disabled a few cores for my CPU pinning, feel free to remove it
+- `vfio-bind` and `vfio-rebind` to passthrough my USB Host controller **which doesn't have reset**. You don't need to do this if your devices support reset.
+- check reset if device supports reset using this script:
+```
+#!/bin/bash
+for iommu_group in $(find /sys/kernel/iommu_groups/ -maxdepth 1 -mindepth 1 -type d);do echo "IOMMU group $(basename "$iommu_group")"; for device in $(\ls -1 "$iommu_group"/devices/); do if [[ -e "$iommu_group"/ devices/"$device"/reset ]]; then echo -n "[RESET]"; fi; echo -n $'\t';lspci -nns "$device"; done; done
+```
 
 
 

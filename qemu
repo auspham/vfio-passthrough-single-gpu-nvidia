@@ -1,0 +1,30 @@
+#!/bin/bash
+
+OBJECT="$1"
+OPERATION="$2"
+USD_ID="0000:00:14.0"
+if [[ $OBJECT == "win10" ]]; then
+        case "$OPERATION" in
+                "prepare")
+                systemctl start libvirt-nosleep@"$OBJECT"  2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+
+                /bin/vfio-bind $USB_ID 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+                /bin/vfio-startup.sh 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+                ;;
+
+                "started")
+                systemctl set-property --runtime -- user.slice AllowedCPUs=0-7
+                systemctl set-property --runtime -- system.slice AllowedCPUs=0-7
+                systemctl set-property --runtime -- init.scope AllowedCPUs=0-7
+                ;;
+
+                "release")
+                /bin/vfio-rebind $USB_ID xhci_hcd 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+                systemctl set-property --runtime -- user.slice AllowedCPUs=0-15
+                systemctl set-property --runtime -- system.slice AllowedCPUs=0-15
+                systemctl set-property --runtime -- init.scope AllowedCPUs=0-15
+                systemctl stop libvirt-nosleep@"$OBJECT"  2>&1 | tee -a /var/log/libvirt/custom_hooks.log  
+                /bin/vfio-teardown.sh 2>&1 | tee -a /var/log/libvirt/custom_hooks.log
+                ;;
+        esac
+fi
